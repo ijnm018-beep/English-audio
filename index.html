@@ -1,145 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>幼儿英语音频合集</title>
-  <style>
-    :root{--bg:#f7f7f8;--card:#fff;--accent:#2d8cf0;--muted:#666;}
-    body{margin:0;font-family:system-ui,-apple-system,"Helvetica Neue","PingFang SC","Microsoft Yahei",sans-serif;background:var(--bg);color:#111;}
-    header{background:var(--accent);color:#fff;padding:16px;font-size:18px;font-weight:600;text-align:center;}
-    .wrap{padding:12px;max-width:720px;margin:0 auto;}
-    .unit{background:var(--card);border-radius:10px;padding:10px;margin-bottom:12px;box-shadow:0 1px 0 rgba(0,0,0,0.04);}
-    .unit-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
-    .unit-title{font-weight:700;}
-    .toggle{font-size:14px;color:var(--muted);}
-    .list{margin-top:8px;display:none;}
-    .item{display:flex;align-items:flex-start;padding:10px 0;border-top:1px dashed #eee;}
-    .item:first-child{border-top:0;}
-    .idx{width:38px;height:38px;border-radius:6px;background:#f0f6ff;color:var(--accent);display:flex;align-items:center;justify-content:center;margin-right:10px;font-weight:700;}
-    .meta{flex:1;}
-    .title{font-size:15px;margin-bottom:8px;}
-    .controls{display:flex;gap:8px;align-items:center;}
-    button.play{background:var(--accent);color:#fff;border:0;padding:6px 10px;border-radius:8px;font-size:14px;}
-    .search{display:flex;margin:12px 0;}
-    .search input{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e6e6;font-size:14px;}
-    .hint{font-size:12px;color:var(--muted);margin-top:8px;}
-    audio{width:100%;}
-    footer{padding:12px;text-align:center;color:var(--muted);font-size:12px;}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unit 1 - ABC 音频合集</title>
 </head>
-<body>
-  <header>幼儿英语音频合集（扫码即听）</header>
-  <div class="wrap">
-    <div class="search">
-      <input id="searchInput" placeholder="搜索音频/单词，如 apple 或 01" />
-    </div>
+<body style="font-family:sans-serif; padding:20px;">
+  <h2>Unit 1 - ABC 音频合集</h2>
 
-    <div id="units"></div>
+  <p>01 Apple</p>
+  <audio controls>
+    <source src="https://github.com/ijnm018-beep/English-audio/raw/refs/heads/main/01_pig.MP3">
+  </audio>
 
-    <div class="hint">提示：微信内置浏览器打开，点击播放按钮即可播放。</div>
-  </div>
-
-  <footer>Powered by 你的工作室 · 无需安装 APP / 无需登录</footer>
-
-  <script>
-  /* ===========================
-     注意（必须看）：
-     - 下面的 audioData 数组里每一项代表一个单元（Unit）。
-     - 请把每个 item 的 src 替换为你的真实 mp3 直链（HTTPS）。
-     - 只需要替换 "src" 的字符串，其他代码**不要动**。
-     =========================== */
-
-  const audioData = [
-    {
-      unitTitle: "Unit1_Animals",
-      items: [
-        { idx: "01", title: "pig", src: "https://github.com/ijnm018-beep/English-audio/raw/refs/heads/main/01_pig.MP3
-" },
-        { idx: "02", title: "horse", src: "https://github.com/ijnm018-beep/English-audio/raw/refs/heads/main/02_horse.MP3
-" },
-        { idx: "03", title: "goose", src: "https://github.com/ijnm018-beep/English-audio/raw/refs/heads/main/03_goose.MP3
-" }
-      ]
-    }
-    /* 如果有更多单元，复制上面整个对象并改 unitTitle 与 items */
-  ];
-
-  /* 渲染与交互逻辑（无需修改） */
-  const unitsEl = document.getElementById('units');
-
-  function createUnitEl(unit) {
-    const el = document.createElement('div');
-    el.className = 'unit';
-    const uid = 'u' + Math.random().toString(36).slice(2,9);
-    el.innerHTML = `
-      <div class="unit-head" data-target="${uid}">
-        <div class="unit-title">${unit.unitTitle} <span style="font-weight:400;color:var(--muted);font-size:13px">（共 ${unit.items.length} 条）</span></div>
-        <div class="toggle">展开 ▾</div>
-      </div>
-      <div class="list" id="${uid}"></div>
-    `;
-    const list = el.querySelector('.list');
-    unit.items.forEach((it, i) => {
-      const item = document.createElement('div');
-      item.className = 'item';
-      // 防止 src 中包含注释没替换造成错误，优先取字符串并清理注释
-      const safeSrc = (it.src || '').replace(/<!--[\s\S]*?-->/g, '').trim();
-      item.innerHTML = `
-        <div class="idx">${it.idx || (i+1).toString().padStart(2,'0')}</div>
-        <div class="meta">
-          <div class="title">${it.title || 'Audio ' + (i+1)}</div>
-          <div class="controls">
-            <button class="play">播放</button>
-          </div>
-          <div style="margin-top:8px;">
-            <audio preload="none" src="${safeSrc}"></audio>
-          </div>
-        </div>
-      `;
-      const btn = item.querySelector('button.play');
-      const audioEl = item.querySelector('audio');
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('audio').forEach(a=>{ if(a!==audioEl){ a.pause(); a.currentTime=0; }});
-        if (audioEl.paused) {
-          audioEl.play().catch(e => {
-            alert('播放被阻止，请再次点击播放按钮或允许页面播放音频。');
-          });
-        } else {
-          audioEl.pause();
-        }
-      });
-      list.appendChild(item);
-    });
-    const head = el.querySelector('.unit-head');
-    head.addEventListener('click', () => {
-      const tgt = document.getElementById(head.dataset.target);
-      const open = tgt.style.display !== 'block';
-      tgt.style.display = open ? 'block' : 'none';
-      head.querySelector('.toggle').textContent = open ? '收起 ▴' : '展开 ▾';
-    });
-    return el;
-  }
-
-  function render(data) {
-    unitsEl.innerHTML = '';
-    data.forEach(u => unitsEl.appendChild(createUnitEl(u)));
-  }
-  render(audioData);
-
-  const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', () => {
-    const q = searchInput.value.trim().toLowerCase();
-    if (!q) return render(audioData);
-    const filtered = audioData.map(u => {
-      const items = u.items.filter(it => (it.title||'').toLowerCase().includes(q) || (it.idx||'').includes(q));
-      return {...u, items};
-    }).filter(u => u.items.length>0);
-    render(filtered);
-  });
-
-  // 移动兼容
-  document.addEventListener('touchstart', ()=>{}, {passive:true});
-  </script>
+  <p>02 Banana</p>
+  <audio controls>
+    <source src="https://github.com/ijnm018-beep/English-audio/raw/refs/heads/main/02_horse.MP3">
+  </audio>
 </body>
 </html>
