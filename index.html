@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>幼儿英语音频合集</title>
+<style>
+  /* 简洁移动端样式：不依赖任何外部资源，兼容微信内置浏览器 */
+  :root{--bg:#f7f7f8;--card:#ffffff;--accent:#2d8cf0;--muted:#666;}
+  body{margin:0;font-family:system-ui,-apple-system,"Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft Yahei",sans-serif;background:var(--bg);color:#111;}
+  header{background:var(--accent);color:#fff;padding:18px 16px;font-size:18px;font-weight:600;}
+  .wrap{padding:12px;max-width:720px;margin:0 auto;}
+  .unit{background:var(--card);border-radius:10px;padding:10px;margin-bottom:12px;box-shadow:0 1px 0 rgba(0,0,0,0.04);}
+  .unit-head{display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .unit-title{font-weight:700;}
+  .toggle{font-size:14px;color:var(--muted);}
+  .list{margin-top:8px;display:none;}
+  .item{display:flex;align-items:center;padding:8px 0;border-top:1px dashed #eee;}
+  .item:first-child{border-top:0;}
+  .idx{width:34px;height:34px;border-radius:6px;background:#f0f6ff;color:var(--accent);display:flex;align-items:center;justify-content:center;margin-right:8px;font-weight:700;}
+  .meta{flex:1;}
+  .title{font-size:15px;margin-bottom:6px;}
+  .controls{display:flex;gap:8px;align-items:center;}
+  button.play{background:var(--accent);color:#fff;border:0;padding:6px 10px;border-radius:8px;font-size:14px;}
+  .search{display:flex;margin:12px 0;}
+  .search input{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e6e6;font-size:14px;}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;}
+  audio{width:100%;}
+  footer{padding:12px;text-align:center;color:var(--muted);font-size:12px;}
+  @media (min-width:720px){ .wrap{padding:20px;} header{font-size:20px;} }
+</style>
+</head>
+<body>
+<header>幼儿英语音频合集（扫码即听）</header>
+<div class="wrap">
+  <div class="search">
+    <input id="searchInput" placeholder="搜索音频/单词，如 apple 或 01" />
+  </div>
+
+  <!-- 单元容器（由 JS 渲染） -->
+  <div id="units"></div>
+
+  <div class="hint">提示：微信内置浏览器打开，点击播放按钮即可播放，若声音没出请允许页面播放或点击屏幕任意处后再试。</div>
+</div>
+
+<footer>Powered by Your Studio · 不需要 APP / 不需要登录</footer>
+
+<script>
+/* ===========================
+  使用说明：
+  - 把下面 audioData 中的 src 替换为你的音频 HTTPS 直链（123网盘的可直接访问链接）
+  - 每个 unit 代表一个单元（你有 16 个单元），每个 unit 的 items 为音频列表
+  - 将整个文件上传到静态宿主（GitHub Pages / Netlify / Vercel）并生成 HTTPS 链接
+  =========================== */
+
+/* 示例数据：把这里替换为你的 16 个单元与音频链接 */
+const audioData = [
+  {
+    unitTitle: "Unit1_ABC",
+    items: [
+      { idx: "01-猪", title: "Apple", src: "https://www.123865.com/s/X5CYvd-NRppd
+" },
+      { idx: "02-马", title: "Banana", src: "https://www.123865.com/s/X5CYvd-ORppd
+" },
+      { idx: "03鹅", title: "Cat", src: "https://www.123865.com/s/X5CYvd-RRppd
+" }
+    ]
+  },
+  /* 复制上面块，新增 Unit2... Unit16 */
+];
+
+/* 渲染页面 */
+const unitsEl = document.getElementById('units');
+
+function createUnitEl(unit, ui) {
+  const el = document.createElement('div');
+  el.className = 'unit';
+  const uid = 'u' + Math.random().toString(36).slice(2,9);
+  el.innerHTML = `
+    <div class="unit-head" data-target="${uid}">
+      <div class="unit-title">${unit.unitTitle} <span style="font-weight:400;color:var(--muted);font-size:13px">（共 ${unit.items.length} 条）</span></div>
+      <div class="toggle">展开 ▾</div>
+    </div>
+    <div class="list" id="${uid}"></div>
+  `;
+  const list = el.querySelector('.list');
+  unit.items.forEach((it, i) => {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML = `
+      <div class="idx">${it.idx || (i+1).toString().padStart(2,'0')}</div>
+      <div class="meta">
+        <div class="title">${it.title}</div>
+        <div class="controls">
+          <button class="play">播放</button>
+        </div>
+        <div style="margin-top:6px;"><audio preload="none" src="${it.src}"></audio></div>
+      </div>
+    `;
+    // 播放按钮控制
+    const btn = item.querySelector('button.play');
+    const audioEl = item.querySelector('audio');
+    btn.addEventListener('click', () => {
+      // 停掉页面上其它正在播放的音频
+      document.querySelectorAll('audio').forEach(a=>{ if(a!==audioEl){ a.pause(); a.currentTime=0; }});
+      // 若当前为暂停则播放，否则暂停
+      if (audioEl.paused) {
+        audioEl.play().catch(e => {
+          // 微信或浏览器策略可能拒绝 autoplay，提示用户点击播放
+          alert('已阻止自动播放，请再次点击页面或按播放按钮启动音频。');
+        });
+      } else {
+        audioEl.pause();
+      }
+    });
+    list.appendChild(item);
+  });
+  // head toggle
+  const head = el.querySelector('.unit-head');
+  head.addEventListener('click', () => {
+    const tgt = document.getElementById(head.dataset.target);
+    const open = tgt.style.display !== 'block';
+    tgt.style.display = open ? 'block' : 'none';
+    head.querySelector('.toggle').textContent = open ? '收起 ▴' : '展开 ▾';
+  });
+  return el;
+}
+
+/* initial render */
+function render(data) {
+  unitsEl.innerHTML = '';
+  data.forEach(u => {
+    unitsEl.appendChild(createUnitEl(u));
+  });
+}
+render(audioData);
+
+/* 搜索功能（按序号/标题/单词） */
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) return render(audioData);
+  const filtered = audioData.map(u => {
+    const items = u.items.filter(it => (it.title||'').toLowerCase().includes(q) || (it.idx||'').includes(q));
+    return {...u, items};
+  }).filter(u => u.items.length>0);
+  render(filtered);
+});
+
+/* 移动端友好：阻止长按选中文字导致菜单干扰 */
+document.addEventListener('touchstart', ()=>{}, {passive:true});
+</script>
+</body>
+</html>
